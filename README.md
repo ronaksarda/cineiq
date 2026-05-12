@@ -2,7 +2,6 @@
 
 **Next-Generation AI-Powered Movie Recommendation Platform**
 
-> IIT Guwahati Coding Club — Even Semester 2026
 
 ## Overview
 
