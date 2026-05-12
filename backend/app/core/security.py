@@ -2,28 +2,28 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import httpx
-from cachetools import TTLCache
+import time
 
 from app.core.config import settings
 
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
-# Cache JWKS for 1 hour to prevent rate limits
-jwks_cache = TTLCache(maxsize=1, ttl=3600)
+# Simple dictionary cache with timestamp since cachetools was removed
+_jwks_cache = {"data": None, "expires_at": 0}
 
 async def get_jwks():
-    if "jwks" in jwks_cache:
-        return jwks_cache["jwks"]
+    global _jwks_cache
+    now = time.time()
+    
+    if _jwks_cache["data"] and _jwks_cache["expires_at"] > now:
+        return _jwks_cache["data"]
     
     # Simple workaround if no key provided
-    if not settings.next_public_clerk_publishable_key or "REPLACE" in settings.next_public_clerk_publishable_key:
+    if not settings.clerk_secret_key or "REPLACE" in settings.clerk_secret_key:
         return None
 
     # Derive JWKS URL from publishable key
     try:
-        # Clerk publishable keys follow format pk_test_... or pk_live_...
-        # The JWKS URL is typically https://clerk.<domain>/.well-known/jwks.json
-        # For simplicity, we assume frontend passes token and we verify it
         jwks_url = "https://api.clerk.com/v1/jwks"
         async with httpx.AsyncClient() as client:
             resp = await client.get(
@@ -32,7 +32,10 @@ async def get_jwks():
             )
             if resp.status_code == 200:
                 jwks = resp.json()
-                jwks_cache["jwks"] = jwks
+                _jwks_cache = {
+                    "data": jwks,
+                    "expires_at": now + 3600 # 1 hour
+                }
                 return jwks
     except Exception as e:
         import logging
@@ -40,6 +43,15 @@ async def get_jwks():
         return None
 
 async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    if not credentials:
+        # If no credentials but we're in dev/test, return dummy user
+        if not settings.clerk_secret_key or "REPLACE" in settings.clerk_secret_key:
+            return {"sub": "dev_user_123", "role": "user"}
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated"
+        )
+        
     token = credentials.credentials
     
     # If no valid keys, allow bypass for development/testing

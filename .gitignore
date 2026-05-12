@@ -19,3 +19,5 @@ htmlcov/
 .coverage
 .DS_Store
 .vercel
+
+.vercel

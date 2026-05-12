@@ -5,25 +5,13 @@ import json
 class Settings(BaseSettings):
     # App
     environment: str = "development"
-    backend_cors_origins: str | List[str] = ["http://localhost:3000"]
+    backend_cors_origins: str | List[str] = ["http://localhost:3000", "https://*.vercel.app"]
     backend_host: str = "0.0.0.0"
     backend_port: int = 8001
 
-    # Database
-    database_url: str
-
-    # Redis
-    redis_url: str
-
-    # Qdrant
-    qdrant_host: str = "qdrant_cineiq"
-    qdrant_port: int = 6333
-
-    # MinIO
-    minio_endpoint: str
-    minio_root_user: str
-    minio_root_password: str
-    minio_bucket: str = "cineiq-assets"
+    # Upstash Redis
+    upstash_redis_url: str = ""
+    upstash_redis_token: str = ""
 
     # Auth
     clerk_secret_key: str = ""
@@ -31,7 +19,10 @@ class Settings(BaseSettings):
 
     # External APIs
     tmdb_api_key: str = ""
-    groq_api_key: str = ""
+    
+    # Gemini LLM
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.0-flash"
 
     model_config = SettingsConfigDict(
         env_file=".env", 

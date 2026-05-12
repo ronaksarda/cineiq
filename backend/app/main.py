@@ -13,19 +13,7 @@ logger = structlog.get_logger()
 async def lifespan(app: FastAPI):
     # Startup
     logger.info("cineiq_starting", host=settings.backend_host, port=settings.backend_port)
-    
-    # Initialize database
-    try:
-        from app.db.models import Base
-        from app.db.session import engine
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        logger.info("database_initialized")
-    except Exception as e:
-        logger.error("database_init_failed", error=str(e))
-        
     yield
-    
     # Shutdown
     logger.info("cineiq_stopped")
 
@@ -65,6 +53,31 @@ async def global_exception_handler(request: Request, exc: Exception):
     logger.error("unhandled_exception", error=str(exc), path=request.url.path)
     return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
+from app.api.v1 import api_router
+app.include_router(api_router, prefix="/api/v1")
+
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    checks = {}
+    
+    # Check Redis
+    try:
+        from app.db.session import get_redis
+        redis = get_redis()
+        if redis:
+            redis.ping()
+            checks["redis"] = "ok"
+        else:
+            checks["redis"] = "not_configured"
+    except Exception as e:
+        checks["redis"] = f"error: {str(e)[:100]}"
+        
+    # Check Gemini API
+    checks["gemini_api"] = "configured" if settings.gemini_api_key else "not_configured"
+    
+    all_ok = all(v in ("ok", "configured", "not_configured") for v in checks.values())
+    
+    return {
+        "status": "healthy" if all_ok else "degraded",
+        "checks": checks
+    }
