@@ -39,7 +39,7 @@ export default function SemanticSearchPage() {
             </div>
             <h1 style={{ fontSize: '48px', marginBottom: '16px' }}>Describe what you want to watch</h1>
             <p style={{ color: 'var(--text-secondary)', fontSize: '18px' }}>
-              Don't know the title? Just describe the plot, mood, or characters.
+              Don&apos;t know the title? Just describe the plot, mood, or characters.
             </p>
           </motion.div>
         </div>

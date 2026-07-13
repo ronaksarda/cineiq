@@ -96,7 +96,7 @@ export default function MovieDetailPage() {
         {/* Left Col: Overview & Emotional Arc */}
         <div>
           <h3 style={{ fontSize: '24px', marginBottom: '16px', fontStyle: 'italic', color: 'var(--text-secondary)' }}>
-            "{movie.tagline}"
+            &ldquo;{movie.tagline}&rdquo;
           </h3>
           <p style={{ fontSize: '18px', color: 'var(--text-primary)', lineHeight: 1.7, marginBottom: '40px' }}>
             {movie.overview}

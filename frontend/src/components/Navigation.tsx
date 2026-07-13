@@ -42,7 +42,12 @@ export default function Navigation() {
         transition: 'all 0.3s ease',
       }}
     >
-      <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <Link
+        href="/"
+        className="site-logo"
+        aria-label="CineIQ home"
+        style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+      >
         <div style={{
           width: '32px', height: '32px',
           background: 'var(--accent-primary)',
@@ -57,7 +62,7 @@ export default function Navigation() {
         </span>
       </Link>
 
-      <nav style={{ display: 'flex', gap: '8px' }}>
+      <nav aria-label="Main navigation" style={{ display: 'flex', gap: '8px' }}>
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -65,6 +70,8 @@ export default function Navigation() {
             <Link
               key={item.href}
               href={item.href}
+              className="navigation-link"
+              aria-current={isActive ? 'page' : undefined}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -87,7 +94,7 @@ export default function Navigation() {
       </nav>
       
       <div>
-        <button className="btn btn-glass" style={{ padding: '8px 20px', fontSize: '13px' }}>
+        <button className="btn btn-glass navigation-action" style={{ padding: '8px 20px', fontSize: '13px' }}>
           Sign In
         </button>
       </div>
