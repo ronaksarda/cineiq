@@ -232,3 +232,12 @@ a {
 ::-webkit-scrollbar-thumb:hover {
   background: #3F3F46;
 }
+
+/* ─── Scoped Navigation Focus Styles ─── */
+.site-logo:focus-visible,
+.navigation-link:focus-visible,
+.navigation-action:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 4px;
+}
+
