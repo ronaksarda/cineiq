@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
-import { Settings, Edit2 } from 'lucide-react';
+import { Settings } from 'lucide-react';
 
 const tasteData = [
   { subject: 'Sci-Fi', A: 90, fullMark: 100 },

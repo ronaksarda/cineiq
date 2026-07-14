@@ -1,9 +1,8 @@
 'use client';
 
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Play, Plus, ThumbsUp, Heart, Share2, CornerDownRight } from 'lucide-react';
+import { Play, Plus, ThumbsUp, Heart, CornerDownRight } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { useParams } from 'next/navigation';
 
 // Mock Data
 const movie = {
@@ -34,7 +33,6 @@ const emotionalArc = [
 ];
 
 export default function MovieDetailPage() {
-  const params = useParams();
   const { scrollY } = useScroll();
   
   // Parallax effects
