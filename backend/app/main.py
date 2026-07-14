@@ -1,8 +1,12 @@
 from contextlib import asynccontextmanager
+import traceback
+import time
+
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-import time
 import structlog
 
 from app.core.config import settings
@@ -48,10 +52,49 @@ async def log_requests(request: Request, call_next):
     
     return response
 
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    logger.warning(
+        "request_validation_error",
+        path=request.url.path,
+        errors=exc.errors(),
+    )
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors(), "error_code": "VALIDATION_ERROR"},
+    )
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    logger.warning(
+        "http_exception",
+        path=request.url.path,
+        status_code=exc.status_code,
+        detail=exc.detail,
+    )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail, "error_code": "HTTP_ERROR"},
+    )
+
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    logger.error("unhandled_exception", error=str(exc), path=request.url.path)
-    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+    logger.error(
+        "unhandled_exception",
+        path=request.url.path,
+        error=str(exc),
+        traceback=traceback.format_exc(),
+    )
+    if settings.environment.lower() in ("production", "prod"):
+        detail = "Internal server error"
+    else:
+        detail = f"{type(exc).__name__}: {exc}"
+    return JSONResponse(
+        status_code=500,
+        content={"detail": detail, "error_code": "INTERNAL_SERVER_ERROR"},
+    )
 
 from app.api.v1 import api_router
 app.include_router(api_router, prefix="/api/v1")
